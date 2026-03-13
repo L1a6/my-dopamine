@@ -1,7 +1,13 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { Play, Pause, SkipBack, SkipForward, Music, Cake, X, Plus } from 'lucide-react';
+
+const DotLottiePlayer = dynamic(
+  () => import('@lottiefiles/dotlottie-react').then((mod) => mod.DotLottieReact),
+  { ssr: false }
+);
 
 interface Song {
   title: string;
@@ -26,6 +32,7 @@ export default function BirthdayPage() {
   const [duration, setDuration] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const shouldAutoPlayRef = useRef(false);
 
   const songs: Song[] = [
     {
@@ -99,14 +106,16 @@ export default function BirthdayPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Handle track change with automatic playback
+  // Handle track change with automatic playback.
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
     const handleCanPlay = () => {
-      if (isPlaying) {
-        audio.play().catch(() => console.log("Playback initiated"));
+      if (shouldAutoPlayRef.current) {
+        audio.play().catch(() => {
+          setIsPlaying(false);
+        });
       }
     };
 
@@ -119,26 +128,16 @@ export default function BirthdayPage() {
     setDuration(0);
     audio.load();
     
-    if (isPlaying) {
-      audio.play().catch(() => console.log("Auto-play on track change"));
+    if (shouldAutoPlayRef.current) {
+      audio.play().catch(() => {
+        setIsPlaying(false);
+      });
     }
 
     return () => {
       audio.removeEventListener("canplay", handleCanPlay);
     };
   }, [currentTrack]);
-
-  // Audio playback control
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    if (isPlaying) {
-      audio.play().catch(() => console.log("Autoplay blocked"));
-    } else {
-      audio.pause();
-    }
-  }, [isPlaying]);
 
   // Audio event listeners
   useEffect(() => {
@@ -165,23 +164,53 @@ export default function BirthdayPage() {
     };
 
     const handleEnded = () => {
-      playNextTrack();
+      if (shouldAutoPlayRef.current) {
+        playNextTrack();
+      }
+    };
+
+    const handlePlay = () => {
+      setIsPlaying(true);
+    };
+
+    const handlePause = () => {
+      setIsPlaying(false);
     };
 
     audio.addEventListener("timeupdate", handleTimeUpdate);
     audio.addEventListener("loadedmetadata", handleLoadedMetadata);
     audio.addEventListener("durationchange", handleDurationChange);
     audio.addEventListener("ended", handleEnded);
+    audio.addEventListener("play", handlePlay);
+    audio.addEventListener("pause", handlePause);
 
     return () => {
       audio.removeEventListener("timeupdate", handleTimeUpdate);
       audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
       audio.removeEventListener("durationchange", handleDurationChange);
       audio.removeEventListener("ended", handleEnded);
+      audio.removeEventListener("play", handlePlay);
+      audio.removeEventListener("pause", handlePause);
     };
   }, []);
 
-  const togglePlayPause = () => setIsPlaying(!isPlaying);
+  const togglePlayPause = async () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (audio.paused) {
+      shouldAutoPlayRef.current = true;
+      try {
+        await audio.play();
+      } catch {
+        shouldAutoPlayRef.current = false;
+        setIsPlaying(false);
+      }
+    } else {
+      shouldAutoPlayRef.current = false;
+      audio.pause();
+    }
+  };
   
   const playNextTrack = () => {
     setCurrentTrack((prev) => (prev + 1) % songs.length);
@@ -344,6 +373,20 @@ export default function BirthdayPage() {
           {/* Song Counter */}
           <div className="text-center text-xs text-gray-500">
             {currentTrack + 1} / {songs.length}
+          </div>
+        </div>
+      </div>
+
+      {/* .lottie Display Section - after controls */}
+      <div className="bg-black/40 backdrop-blur-md border-t border-white/10">
+        <div className="max-w-2xl mx-auto px-6 py-8">
+          <div className="mx-auto w-full max-w-xs h-56 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
+            <DotLottiePlayer
+              src="/Happy Birthday!.lottie"
+              autoplay
+              loop
+              className="w-full h-full"
+            />
           </div>
         </div>
       </div>
