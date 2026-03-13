@@ -2,9 +2,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, SkipBack, SkipForward, Music, Cake, X, Plus } from 'lucide-react';
-import dynamic from 'next/dynamic';
-
-const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
 
 interface Song {
   title: string;
@@ -28,7 +25,6 @@ export default function BirthdayPage() {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [showModal, setShowModal] = useState(false);
-  const [lottieData, setLottieData] = useState(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const songs: Song[] = [
@@ -44,7 +40,7 @@ export default function BirthdayPage() {
       artist: "Ruger",
       duration: "3:58",
       audioFile: "/Blue - Ruger.mp3",
-      image: "/finepic6.jpg",
+      image: "/finepic3.jpg",
     },
     {
       title: "Bambi",
@@ -78,12 +74,12 @@ export default function BirthdayPage() {
     {
       title: "Your Beauty Within",
       message: "It's not just your beauty that captivates me—it's your kindness, your strength, and the light you bring to my world. Thank you for being exactly who you are.",
-      image: "/finepic2.jpg",
+      image: "/finepic3.jpg",
     },
     {
       title: "My Midnight Sky",
       message: "In the darkness, you are my light. In the chaos, you are my calm. In my heart, you are everything.",
-      image: "/finepic3.jpg",
+      image: "/finepic2.jpg",
     },
     {
       title: "Sweet Moments",
@@ -103,22 +99,6 @@ export default function BirthdayPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Load Lottie animation
-  useEffect(() => {
-    const loadLottie = async () => {
-      try {
-        const response = await fetch('/Happy Birthday!.lottie');
-        if (response.ok) {
-          const data = await response.json();
-          setLottieData(data);
-        }
-      } catch (error) {
-        console.log('Lottie loaded from file');
-      }
-    };
-    loadLottie();
-  }, []);
-
   // Handle track change with automatic playback
   useEffect(() => {
     const audio = audioRef.current;
@@ -132,9 +112,12 @@ export default function BirthdayPage() {
 
     audio.addEventListener("canplay", handleCanPlay);
     
-    // Reset and load new track
+    // Reset timing state and force metadata reload for the new source.
     audio.currentTime = 0;
+    setCurrentTime(0);
     setProgress(0);
+    setDuration(0);
+    audio.load();
     
     if (isPlaying) {
       audio.play().catch(() => console.log("Auto-play on track change"));
@@ -143,7 +126,7 @@ export default function BirthdayPage() {
     return () => {
       audio.removeEventListener("canplay", handleCanPlay);
     };
-  }, [currentTrack, isPlaying]);
+  }, [currentTrack]);
 
   // Audio playback control
   useEffect(() => {
@@ -170,7 +153,15 @@ export default function BirthdayPage() {
     };
 
     const handleLoadedMetadata = () => {
-      setDuration(audio.duration);
+      if (Number.isFinite(audio.duration) && audio.duration > 0) {
+        setDuration(audio.duration);
+      }
+    };
+
+    const handleDurationChange = () => {
+      if (Number.isFinite(audio.duration) && audio.duration > 0) {
+        setDuration(audio.duration);
+      }
     };
 
     const handleEnded = () => {
@@ -179,11 +170,13 @@ export default function BirthdayPage() {
 
     audio.addEventListener("timeupdate", handleTimeUpdate);
     audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+    audio.addEventListener("durationchange", handleDurationChange);
     audio.addEventListener("ended", handleEnded);
 
     return () => {
       audio.removeEventListener("timeupdate", handleTimeUpdate);
       audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+      audio.removeEventListener("durationchange", handleDurationChange);
       audio.removeEventListener("ended", handleEnded);
     };
   }, []);
@@ -201,6 +194,7 @@ export default function BirthdayPage() {
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const audio = audioRef.current;
     if (!audio) return;
+    if (!Number.isFinite(audio.duration) || audio.duration <= 0) return;
     const bounds = e.currentTarget.getBoundingClientRect();
     const percent = (e.clientX - bounds.left) / bounds.width;
     audio.currentTime = percent * audio.duration;
@@ -231,17 +225,9 @@ export default function BirthdayPage() {
             <p className="text-pink-300 text-xl font-light">baby!</p>
           </div>
 
-          {/* Lottie Animation */}
-          {lottieData && (
-            <div className="relative z-20 w-32 h-32 flex justify-center">
-              <Lottie 
-                animationData={lottieData}
-                loop
-                autoplay
-                style={{ width: '100%', height: '100%' }}
-              />
-            </div>
-          )}
+          <div className="relative z-20 w-32 h-32 flex justify-center items-center">
+            <Cake size={64} className="text-pink-300 animate-pulse" />
+          </div>
         </div>
       </div>
     );
@@ -294,17 +280,6 @@ export default function BirthdayPage() {
       {/* Controls Section */}
       <div className="bg-gradient-to-t from-black via-black/98 to-transparent backdrop-blur-lg border-t border-white/10">
         <div className="max-w-2xl mx-auto px-6 py-5">
-          {/* Lottie Animation in Controls - Compact */}
-          {lottieData && (
-            <div className="flex justify-center mb-3 h-14">
-              <Lottie
-                animationData={lottieData}
-                loop
-                autoplay
-                style={{ width: '56px', height: '56px' }}
-              />
-            </div>
-          )}
 
           {/* Progress Bar */}
           <div 
@@ -372,6 +347,8 @@ export default function BirthdayPage() {
           </div>
         </div>
       </div>
+
+
 
       {/* Modal - Love Message with Image */}
       {showModal && (

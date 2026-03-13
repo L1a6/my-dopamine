@@ -25,6 +25,7 @@
     "noFallthroughCasesInSwitch": true,
     "resolveJsonModule": true,
     "moduleResolution": "bundler",
+    "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
       "@/*": [
@@ -46,6 +47,7 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
+    "**/*.d.ts",
     "next-env.d.ts",
     ".next/types/**/*.ts"
   ],
