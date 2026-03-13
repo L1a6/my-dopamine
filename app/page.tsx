@@ -105,10 +105,18 @@ export default function BirthdayPage() {
 
   // Load Lottie animation
   useEffect(() => {
-    fetch('/Happy Birthday!.lottie')
-      .then((res) => res.json())
-      .then((data) => setLottieData(data))
-      .catch(() => console.log('Lottie file loaded'));
+    const loadLottie = async () => {
+      try {
+        const response = await fetch('/Happy Birthday!.lottie');
+        if (response.ok) {
+          const data = await response.json();
+          setLottieData(data);
+        }
+      } catch (error) {
+        console.log('Lottie loaded from file');
+      }
+    };
+    loadLottie();
   }, []);
 
   // Handle track change with automatic playback
@@ -277,23 +285,23 @@ export default function BirthdayPage() {
         </div>
 
         {/* Song Info */}
-        <div className="mb-24">
+        <div className="mb-2">
           <h2 className="text-2xl font-bold mb-1">{songs[currentTrack].title}</h2>
-          <p className="text-gray-300">{songs[currentTrack].artist}</p>
+          <p className="text-gray-300 text-sm">{songs[currentTrack].artist}</p>
         </div>
       </div>
 
       {/* Controls Section */}
       <div className="bg-gradient-to-t from-black via-black/98 to-transparent backdrop-blur-lg border-t border-white/10">
-        <div className="max-w-2xl mx-auto px-6 py-6">
-          {/* Lottie Animation in Controls */}
+        <div className="max-w-2xl mx-auto px-6 py-5">
+          {/* Lottie Animation in Controls - Compact */}
           {lottieData && (
-            <div className="flex justify-center mb-4 h-16">
+            <div className="flex justify-center mb-3 h-14">
               <Lottie
                 animationData={lottieData}
                 loop
                 autoplay
-                style={{ width: '64px', height: '64px' }}
+                style={{ width: '56px', height: '56px' }}
               />
             </div>
           )}
