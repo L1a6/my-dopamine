@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, SkipBack, SkipForward, Music, Cake, X, Plus } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
 
 interface Song {
   title: string;
@@ -25,6 +28,7 @@ export default function BirthdayPage() {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [showModal, setShowModal] = useState(false);
+  const [lottieData, setLottieData] = useState(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const songs: Song[] = [
@@ -40,14 +44,14 @@ export default function BirthdayPage() {
       artist: "Ruger",
       duration: "3:58",
       audioFile: "/Blue - Ruger.mp3",
-      image: "/finepic2.jpg",
+      image: "/finepic6.jpg",
     },
     {
       title: "Bambi",
       artist: "Josh Belter",
       duration: "4:12",
       audioFile: "/BAMBI - Josh Belter.mp3",
-      image: "/finepic3.jpg",
+      image: "/finepic2.jpg",
     },
     {
       title: "Vanilla",
@@ -97,6 +101,14 @@ export default function BirthdayPage() {
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 2500);
     return () => clearTimeout(timer);
+  }, []);
+
+  // Load Lottie animation
+  useEffect(() => {
+    fetch('/Happy Birthday!.lottie')
+      .then((res) => res.json())
+      .then((data) => setLottieData(data))
+      .catch(() => console.log('Lottie file loaded'));
   }, []);
 
   // Handle track change with automatic playback
@@ -211,12 +223,17 @@ export default function BirthdayPage() {
             <p className="text-pink-300 text-xl font-light">baby!</p>
           </div>
 
-          {/* Animated celebration icon */}
-          <div className="flex justify-center">
-            <div className="text-6xl animate-bounce" style={{ animationDelay: "0.4s" }}>
-              🎉
+          {/* Lottie Animation */}
+          {lottieData && (
+            <div className="relative z-20 w-32 h-32 flex justify-center">
+              <Lottie 
+                animationData={lottieData}
+                loop
+                autoplay
+                style={{ width: '100%', height: '100%' }}
+              />
             </div>
-          </div>
+          )}
         </div>
       </div>
     );
@@ -268,13 +285,18 @@ export default function BirthdayPage() {
 
       {/* Controls Section */}
       <div className="bg-gradient-to-t from-black via-black/98 to-transparent backdrop-blur-lg border-t border-white/10">
-        <div className="max-w-2xl mx-auto px-6 py-8">
-          {/* Celebration Animation in Controls */}
-          <div className="flex justify-center mb-6">
-            <div className="text-5xl animate-bounce" style={{ animationDelay: "0s" }}>
-              🎂
+        <div className="max-w-2xl mx-auto px-6 py-6">
+          {/* Lottie Animation in Controls */}
+          {lottieData && (
+            <div className="flex justify-center mb-4 h-16">
+              <Lottie
+                animationData={lottieData}
+                loop
+                autoplay
+                style={{ width: '64px', height: '64px' }}
+              />
             </div>
-          </div>
+          )}
 
           {/* Progress Bar */}
           <div 
