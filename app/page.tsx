@@ -99,6 +99,32 @@ export default function BirthdayPage() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Handle track change with automatic playback
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const handleCanPlay = () => {
+      if (isPlaying) {
+        audio.play().catch(() => console.log("Playback initiated"));
+      }
+    };
+
+    audio.addEventListener("canplay", handleCanPlay);
+    
+    // Reset and load new track
+    audio.currentTime = 0;
+    setProgress(0);
+    
+    if (isPlaying) {
+      audio.play().catch(() => console.log("Auto-play on track change"));
+    }
+
+    return () => {
+      audio.removeEventListener("canplay", handleCanPlay);
+    };
+  }, [currentTrack, isPlaying]);
+
   // Audio playback control
   useEffect(() => {
     const audio = audioRef.current;
@@ -140,20 +166,16 @@ export default function BirthdayPage() {
       audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
       audio.removeEventListener("ended", handleEnded);
     };
-  }, [currentTrack]);
+  }, []);
 
   const togglePlayPause = () => setIsPlaying(!isPlaying);
   
   const playNextTrack = () => {
     setCurrentTrack((prev) => (prev + 1) % songs.length);
-    setProgress(0);
-    setIsPlaying(true);
   };
   
   const playPreviousTrack = () => {
     setCurrentTrack((prev) => (prev - 1 + songs.length) % songs.length);
-    setProgress(0);
-    setIsPlaying(true);
   };
 
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -173,15 +195,27 @@ export default function BirthdayPage() {
 
   if (isLoading) {
     return (
-      <div className="fixed inset-0 bg-gradient-to-br from-black via-gray-950 to-black flex items-center justify-center z-50">
-        <div className="text-center space-y-6">
-          <div className="flex items-center justify-center gap-3">
-            <Music className="w-12 h-12 text-green-500 animate-pulse" />
-            <Cake className="w-12 h-12 text-pink-500 animate-bounce" />
+      <div className="fixed inset-0 bg-gradient-to-br from-black via-slate-950 to-gray-950 flex items-center justify-center z-50 overflow-hidden">
+        {/* Premium background blur elements */}
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-pink-600/20 rounded-full filter blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-600/20 rounded-full filter blur-3xl animate-pulse" style={{ animationDelay: "1s" }}></div>
+
+        <div className="relative z-10 text-center space-y-8">
+          <div className="flex items-center justify-center gap-4">
+            <Music className="w-14 h-14 text-pink-400 animate-pulse" />
+            <Cake className="w-14 h-14 text-purple-400 animate-bounce" style={{ animationDelay: "0.2s" }} />
           </div>
-          <div className="space-y-2">
-            <p className="text-white text-3xl font-light">cheers to the big 19</p>
-            <p className="text-pink-400 text-2xl font-light">love</p>
+
+          <div className="space-y-3">
+            <p className="text-white text-4xl font-light tracking-wide">cheers to the big 19</p>
+            <p className="text-pink-300 text-xl font-light">baby!</p>
+          </div>
+
+          {/* Animated celebration icon */}
+          <div className="flex justify-center">
+            <div className="text-6xl animate-bounce" style={{ animationDelay: "0.4s" }}>
+              🎉
+            </div>
           </div>
         </div>
       </div>
@@ -189,12 +223,17 @@ export default function BirthdayPage() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-black via-gray-950 to-black text-white">
+    <div className="w-full min-h-screen bg-gradient-to-br from-black via-gray-950 to-gray-900 text-white">
       {/* Audio Element */}
-      <audio ref={audioRef} src={songs[currentTrack].audioFile} crossOrigin="anonymous" />
+      <audio 
+        ref={audioRef} 
+        src={songs[currentTrack].audioFile} 
+        crossOrigin="anonymous"
+        preload="metadata"
+      />
 
       {/* Main Content */}
-      <div className="max-w-2xl mx-auto px-6 py-12 pt-6">
+      <div className="max-w-2xl mx-auto px-6 py-12 pt-8">
         {/* Album Cover Section */}
         <div className="relative mb-8 rounded-2xl overflow-hidden shadow-2xl aspect-square group">
           <img
@@ -207,6 +246,8 @@ export default function BirthdayPage() {
           <button
             onClick={() => setShowModal(true)}
             className="absolute top-4 right-4 z-10 p-3 rounded-full bg-white/20 hover:bg-white/40 text-white backdrop-blur-md border border-white/30 transition-all hover:scale-110"
+            type="button"
+            aria-label="Show message"
           >
             <Plus size={20} />
           </button>
@@ -215,24 +256,34 @@ export default function BirthdayPage() {
         {/* Title Below Image */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">Happy Birthday, My Love</h1>
-          <p className="text-gray-400">A Collection of Love Songs for Your 19th</p>
+          <p className="text-gray-400">A Collection of Songs for Your 19th</p>
         </div>
 
         {/* Song Info */}
-        <div className="mb-12">
+        <div className="mb-24">
           <h2 className="text-2xl font-bold mb-1">{songs[currentTrack].title}</h2>
           <p className="text-gray-300">{songs[currentTrack].artist}</p>
         </div>
-
       </div>
 
-      {/* Scrollable Controls */}
-      <div className="bg-gradient-to-t from-black via-black/95 to-transparent backdrop-blur-lg border-t border-white/10">
-        <div className="max-w-2xl mx-auto px-6 py-6">
+      {/* Controls Section */}
+      <div className="bg-gradient-to-t from-black via-black/98 to-transparent backdrop-blur-lg border-t border-white/10">
+        <div className="max-w-2xl mx-auto px-6 py-8">
+          {/* Celebration Animation in Controls */}
+          <div className="flex justify-center mb-6">
+            <div className="text-5xl animate-bounce" style={{ animationDelay: "0s" }}>
+              🎂
+            </div>
+          </div>
+
           {/* Progress Bar */}
           <div 
             className="mb-4 h-1 bg-gray-700 rounded-full overflow-hidden cursor-pointer hover:h-1.5 transition-all"
             onClick={handleProgressClick}
+            role="progressbar"
+            aria-valuenow={Math.round(progress)}
+            aria-valuemin={0}
+            aria-valuemax={100}
           >
             <div
               className="h-full bg-white transition-all"
@@ -241,7 +292,7 @@ export default function BirthdayPage() {
           </div>
 
           {/* Time Display */}
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex justify-between items-center mb-6">
             <div>
               <p className="text-white font-medium text-sm">{songs[currentTrack].title}</p>
               <p className="text-gray-400 text-xs">{songs[currentTrack].artist}</p>
@@ -252,17 +303,21 @@ export default function BirthdayPage() {
           </div>
 
           {/* Controls */}
-          <div className="flex items-center justify-center gap-6">
+          <div className="flex items-center justify-center gap-6 mb-6">
             <button
               onClick={playPreviousTrack}
-              className="text-gray-400 hover:text-white transition-colors"
+              className="text-gray-400 hover:text-white transition-colors p-2"
+              type="button"
+              aria-label="Previous track"
             >
               <SkipBack size={24} fill="currentColor" />
             </button>
 
             <button
               onClick={togglePlayPause}
-              className="bg-white hover:bg-gray-100 text-black rounded-full p-3 transition-all hover:scale-110"
+              className="bg-white hover:bg-gray-100 text-black rounded-full p-3 transition-all hover:scale-110 shadow-lg"
+              type="button"
+              aria-label={isPlaying ? "Pause" : "Play"}
             >
               {isPlaying ? (
                 <Pause size={24} fill="currentColor" />
@@ -273,14 +328,16 @@ export default function BirthdayPage() {
 
             <button
               onClick={playNextTrack}
-              className="text-gray-400 hover:text-white transition-colors"
+              className="text-gray-400 hover:text-white transition-colors p-2"
+              type="button"
+              aria-label="Next track"
             >
               <SkipForward size={24} fill="currentColor" />
             </button>
           </div>
 
           {/* Song Counter */}
-          <div className="text-center text-xs text-gray-500 mt-3">
+          <div className="text-center text-xs text-gray-500">
             {currentTrack + 1} / {songs.length}
           </div>
         </div>
@@ -288,22 +345,36 @@ export default function BirthdayPage() {
 
       {/* Modal - Love Message with Image */}
       {showModal && (
-        <div className="modal-backdrop" onClick={() => setShowModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div 
+          className="modal-backdrop" 
+          onClick={() => setShowModal(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
+        >
+          <div 
+            className="modal-content" 
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               onClick={() => setShowModal(false)}
               className="close-modal"
+              type="button"
+              aria-label="Close message"
             >
               <X size={24} />
             </button>
 
             <img
               src={modalMessages[currentTrack].image}
-              alt="Love"
+              alt="Love message"
               className="modal-image"
             />
 
-            <h2 className="text-3xl font-bold mb-4 text-white">
+            <h2 
+              id="modal-title"
+              className="text-3xl font-bold mb-4 text-white"
+            >
               {modalMessages[currentTrack].title}
             </h2>
 
