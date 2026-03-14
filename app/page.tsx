@@ -407,7 +407,7 @@ export default function BirthdayPage() {
       </div>
 
       {/* Controls Section */}
-      <div className="relative z-10 bg-gradient-to-t from-black via-black/98 to-transparent backdrop-blur-lg border-t border-white/10">
+      <div className="relative z-10 bg-gradient-to-t from-black via-black/98 to-transparent backdrop-blur-lg border-t border-white/10 premium-controls-section">
         <div className="max-w-2xl mx-auto px-6 py-5">
 
           {/* Progress Bar */}

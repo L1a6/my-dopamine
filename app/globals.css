@@ -305,10 +305,21 @@ html {
 }
 
 /* Premium lottie treatment */
+.premium-controls-section::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 42px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.02) 0%, rgba(5, 7, 11, 0.72) 72%, rgba(6, 8, 12, 0.95) 100%);
+}
+
 .premium-lottie-section {
   position: relative;
   background:
-    linear-gradient(180deg, rgba(6, 8, 12, 0.82) 0%, rgba(7, 10, 15, 0.92) 42%, rgba(3, 5, 9, 0.97) 100%),
+    linear-gradient(180deg, rgba(6, 8, 12, 0.72) 0%, rgba(7, 10, 15, 0.9) 42%, rgba(3, 5, 9, 0.97) 100%),
     radial-gradient(circle at 50% -10%, var(--accent-soft) 0%, transparent 58%);
 }
 
@@ -318,21 +329,21 @@ html {
   left: 0;
   right: 0;
   top: 0;
-  height: 22px;
+  height: 14px;
   pointer-events: none;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 35%, transparent 100%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045) 0%, transparent 100%);
 }
 
 .premium-lottie-grid {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: 0.18;
+  opacity: 0.1;
   background-image:
     linear-gradient(to right, rgba(255, 255, 255, 0.07) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
   background-size: 32px 32px;
-  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.65) 0%, transparent 85%);
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.6) 28%, transparent 88%);
 }
 
 .premium-lottie-glow-left,
@@ -365,7 +376,7 @@ html {
 .premium-lottie-sheen {
   inset: 0;
   background: linear-gradient(115deg, transparent 22%, var(--accent-sheen) 50%, transparent 78%);
-  opacity: 0.22;
+  opacity: 0.14;
   transform: translateX(-8%);
 }
 
