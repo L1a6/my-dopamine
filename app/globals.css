@@ -306,9 +306,21 @@ html {
 
 /* Premium lottie treatment */
 .premium-lottie-section {
+  position: relative;
   background:
     linear-gradient(180deg, rgba(6, 8, 12, 0.82) 0%, rgba(7, 10, 15, 0.92) 42%, rgba(3, 5, 9, 0.97) 100%),
     radial-gradient(circle at 50% -10%, var(--accent-soft) 0%, transparent 58%);
+}
+
+.premium-lottie-section::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 22px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 35%, transparent 100%);
 }
 
 .premium-lottie-grid {

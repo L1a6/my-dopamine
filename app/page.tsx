@@ -485,7 +485,7 @@ export default function BirthdayPage() {
 
       {/* .lottie Display Section - after controls */}
       <div
-        className="relative z-10 border-t border-white/10 overflow-hidden premium-lottie-section"
+        className="relative z-10 overflow-hidden premium-lottie-section"
         style={{
           ["--accent-primary" as "--accent-primary"]: currentAccent.primary,
           ["--accent-soft" as "--accent-soft"]: currentAccent.soft,
