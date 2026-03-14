@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import { Play, Pause, SkipBack, SkipForward, X, Plus } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, X, Plus, Music, Cake } from 'lucide-react';
 
 const DotLottiePlayer = dynamic(
   () => import('@lottiefiles/dotlottie-react').then((mod) => mod.DotLottieReact),
@@ -24,7 +24,7 @@ interface ModalMessage {
 }
 
 export default function BirthdayPage() {
-  const [isLoading, setIsLoading] = useState(true);
+  const [preloaderStage, setPreloaderStage] = useState<"loading" | "exiting" | "confetti" | "done">("loading");
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrack, setCurrentTrack] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -86,7 +86,7 @@ export default function BirthdayPage() {
     },
     {
       title: "Your Beauty Within",
-      message: "It's not just your beauty that captivates me—it's your kindness, your strength, and the light you bring to my world. Thank you for being exactly who you are.",
+      message: "It's not just your beauty that captivates me, it's your kindness, your strength, and the light you bring to my world. Thank you for being exactly who you are.",
       image: "/finepic3.jpg",
     },
     {
@@ -96,7 +96,7 @@ export default function BirthdayPage() {
     },
     {
       title: "Sweet Moments",
-      message: "Life is more beautiful with you in it. From the simple morning coffee to the late-night conversations, every moment with you is pure vanilla—sweet and perfect.",
+      message: "Life is more beautiful with you in it. From the simple morning talks to the late-night conversations, every moment with you is pure vanilla, sweet and perfect.",
       image: "/finepic4.jpg",
     },
     {
@@ -106,10 +106,43 @@ export default function BirthdayPage() {
     }
   ], []);
 
-  // Preloader timer
+  const accentThemes = useMemo(
+    () => [
+      { primary: "#ff6b9a", glow: "rgba(255, 107, 154, 0.45)", soft: "rgba(255, 107, 154, 0.2)" },
+      { primary: "#4da3ff", glow: "rgba(77, 163, 255, 0.45)", soft: "rgba(77, 163, 255, 0.2)" },
+      { primary: "#e8b84f", glow: "rgba(232, 184, 79, 0.45)", soft: "rgba(232, 184, 79, 0.2)" },
+      { primary: "#7fe39d", glow: "rgba(127, 227, 157, 0.45)", soft: "rgba(127, 227, 157, 0.2)" },
+      { primary: "#a78bfa", glow: "rgba(167, 139, 250, 0.45)", soft: "rgba(167, 139, 250, 0.2)" }
+    ],
+    []
+  );
+
+  const confettiPieces = useMemo(
+    () =>
+      Array.from({ length: 34 }, (_, idx) => ({
+        id: idx,
+        left: `${Math.round(Math.random() * 100)}%`,
+        delay: `${(Math.random() * 0.45).toFixed(2)}s`,
+        duration: `${(0.9 + Math.random() * 0.7).toFixed(2)}s`,
+        color: accentThemes[idx % accentThemes.length].primary,
+        rotate: `${Math.round(Math.random() * 360)}deg`
+      })),
+    [accentThemes]
+  );
+
+  const currentAccent = accentThemes[currentTrack % accentThemes.length];
+  const safeDuration = duration > 0 ? duration : parseDuration(songs[currentTrack].duration);
+
+  // Preloader stage sequence
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 2500);
-    return () => clearTimeout(timer);
+    const toExit = setTimeout(() => setPreloaderStage("exiting"), 2400);
+    const toConfetti = setTimeout(() => setPreloaderStage("confetti"), 3050);
+    const toDone = setTimeout(() => setPreloaderStage("done"), 3900);
+    return () => {
+      clearTimeout(toExit);
+      clearTimeout(toConfetti);
+      clearTimeout(toDone);
+    };
   }, []);
 
   // Handle track change with automatic playback.
@@ -240,19 +273,18 @@ export default function BirthdayPage() {
     setCurrentTrack((prev) => (prev - 1 + songs.length) % songs.length);
   };
 
-  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleSeekChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const audio = audioRef.current;
     if (!audio) return;
-    const safeDuration = Number.isFinite(audio.duration) && audio.duration > 0
+    const durationValue = Number.isFinite(audio.duration) && audio.duration > 0
       ? audio.duration
       : parseDuration(songs[currentTrack].duration);
-    if (safeDuration <= 0) return;
-    const bounds = e.currentTarget.getBoundingClientRect();
-    const percent = (e.clientX - bounds.left) / bounds.width;
-    const nextTime = Math.min(Math.max(percent, 0), 1) * safeDuration;
+    if (durationValue <= 0) return;
+
+    const nextTime = Math.min(Math.max(Number(e.target.value), 0), durationValue);
     audio.currentTime = nextTime;
     setCurrentTime(nextTime);
-    setProgress((nextTime / safeDuration) * 100);
+    setProgress((nextTime / durationValue) * 100);
   };
 
   const formatTime = (time: number) => {
@@ -262,25 +294,67 @@ export default function BirthdayPage() {
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
-  if (isLoading) {
-    return (
-      <div className="fixed inset-0 bg-gradient-to-br from-black via-slate-950 to-gray-950 flex items-center justify-center z-50 overflow-hidden">
-        {/* Premium background blur elements */}
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-pink-600/20 rounded-full filter blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-600/20 rounded-full filter blur-3xl animate-pulse" style={{ animationDelay: "1s" }}></div>
+  if (preloaderStage !== "done") {
+    const isExiting = preloaderStage === "exiting";
+    const showConfetti = preloaderStage === "confetti";
 
-        <div className="relative z-10 text-center space-y-8">
-          <div className="space-y-3">
-            <p className="text-white text-4xl font-light tracking-wide">cheers to the big 19</p>
-            <p className="text-pink-300 text-xl font-light">baby!</p>
+    return (
+      <div className="fixed inset-0 z-50 overflow-hidden bg-black">
+        {!showConfetti && (
+          <div
+            className={`absolute inset-0 bg-gradient-to-br from-black via-slate-950 to-gray-950 flex items-center justify-center transition-all duration-700 ${isExiting ? "opacity-0 scale-95 -translate-y-4" : "opacity-100 scale-100 translate-y-0"}`}
+          >
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-pink-600/20 rounded-full filter blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-600/20 rounded-full filter blur-3xl animate-pulse" style={{ animationDelay: "1s" }}></div>
+
+            <div className="relative z-10 text-center space-y-8">
+              <div className="flex items-center justify-center gap-4">
+                <Music className="w-14 h-14 text-pink-300 animate-pulse" />
+                <Cake className="w-14 h-14 text-blue-300 animate-bounce" style={{ animationDelay: "0.2s" }} />
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-white text-4xl font-light tracking-wide">cheers to the big 19</p>
+                <p className="text-pink-300 text-xl font-light">baby!</p>
+              </div>
+            </div>
           </div>
-        </div>
+
+        )}
+
+        {showConfetti && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black">
+            <div className="absolute inset-0 confetti-layer">
+              {confettiPieces.map((piece) => (
+                <span
+                  key={piece.id}
+                  className="confetti-piece"
+                  style={{
+                    left: piece.left,
+                    backgroundColor: piece.color,
+                    animationDelay: piece.delay,
+                    animationDuration: piece.duration,
+                    transform: `rotate(${piece.rotate})`
+                  }}
+                />
+              ))}
+            </div>
+            <p className="relative z-10 text-3xl tracking-wide text-white/90">Happy Birthday</p>
+          </div>
+        )}
       </div>
     );
   }
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-black via-gray-950 to-gray-900 text-white">
+    <div className="relative w-full min-h-screen bg-gradient-to-br from-black via-gray-950 to-gray-900 text-white overflow-hidden">
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: `radial-gradient(circle at 15% 15%, ${currentAccent.soft} 0%, transparent 45%), radial-gradient(circle at 85% 80%, ${currentAccent.glow} 0%, transparent 42%)`
+        }}
+      />
+
       {/* Audio Element */}
       <audio 
         ref={audioRef} 
@@ -290,7 +364,7 @@ export default function BirthdayPage() {
       />
 
       {/* Main Content */}
-      <div className="max-w-2xl mx-auto px-6 py-12 pt-8">
+      <div className="relative z-10 max-w-2xl mx-auto px-6 py-12 pt-8">
         {/* Album Cover Section */}
         <div className="relative mb-8 rounded-2xl overflow-hidden shadow-2xl aspect-square group">
           <img
@@ -302,7 +376,11 @@ export default function BirthdayPage() {
           {/* Plus Button for Modal */}
           <button
             onClick={() => setShowModal(true)}
-            className="absolute top-4 right-4 z-10 p-3 rounded-full bg-white/20 hover:bg-white/40 text-white backdrop-blur-md border border-white/30 transition-all hover:scale-110"
+            className="absolute top-4 right-4 z-10 p-3 rounded-full text-white backdrop-blur-md transition-all hover:scale-110"
+            style={{
+              backgroundColor: `${currentAccent.primary}66`,
+              border: `1px solid ${currentAccent.primary}`
+            }}
             type="button"
             aria-label="Show message"
           >
@@ -324,21 +402,23 @@ export default function BirthdayPage() {
       </div>
 
       {/* Controls Section */}
-      <div className="bg-gradient-to-t from-black via-black/98 to-transparent backdrop-blur-lg border-t border-white/10">
+      <div className="relative z-10 bg-gradient-to-t from-black via-black/98 to-transparent backdrop-blur-lg border-t border-white/10">
         <div className="max-w-2xl mx-auto px-6 py-5">
 
           {/* Progress Bar */}
-          <div 
-            className="mb-4 h-1 bg-gray-700 rounded-full overflow-hidden cursor-pointer hover:h-1.5 transition-all"
-            onClick={handleProgressClick}
-            role="progressbar"
-            aria-valuenow={Math.round(progress)}
-            aria-valuemin={0}
-            aria-valuemax={100}
-          >
-            <div
-              className="h-full bg-white transition-all"
-              style={{ width: `${progress}%` }}
+          <div className="mb-5" role="group" aria-label="Seek playback">
+            <input
+              type="range"
+              min={0}
+              max={safeDuration || 0}
+              step={0.1}
+              value={Math.min(currentTime, safeDuration || 0)}
+              onChange={handleSeekChange}
+              className="player-range"
+              style={{
+                background: `linear-gradient(to right, ${currentAccent.primary} 0%, ${currentAccent.primary} ${progress}%, rgba(107,114,128,0.65) ${progress}%, rgba(107,114,128,0.65) 100%)`
+              }}
+              aria-label="Seek song position"
             />
           </div>
 
@@ -366,7 +446,11 @@ export default function BirthdayPage() {
 
             <button
               onClick={togglePlayPause}
-              className="bg-white hover:bg-gray-100 text-black rounded-full p-3 transition-all hover:scale-110 shadow-lg"
+              className="text-black rounded-full p-3 transition-all hover:scale-110 shadow-lg"
+              style={{
+                backgroundColor: currentAccent.primary,
+                boxShadow: `0 0 28px ${currentAccent.glow}`
+              }}
               type="button"
               aria-label={isPlaying ? "Pause" : "Play"}
             >
@@ -395,7 +479,7 @@ export default function BirthdayPage() {
       </div>
 
       {/* .lottie Display Section - after controls */}
-      <div className="bg-black/40 backdrop-blur-md border-t border-white/10">
+      <div className="relative z-10 bg-black/40 backdrop-blur-md border-t border-white/10">
         <div className="max-w-2xl mx-auto px-6 py-8">
           <DotLottiePlayer
             src="/Happy Birthday!.lottie"
