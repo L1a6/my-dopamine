@@ -117,6 +117,21 @@ export default function BirthdayPage() {
     []
   );
 
+  const revealConfetti = useMemo(
+    () =>
+      Array.from({ length: 40 }, (_, idx) => ({
+        id: idx,
+        left: `${Math.round(Math.random() * 100)}%`,
+        delay: `${(Math.random() * 0.35).toFixed(2)}s`,
+        duration: `${(1.2 + Math.random() * 0.8).toFixed(2)}s`,
+        drift: `${Math.round((Math.random() - 0.5) * 180)}px`,
+        spin: `${Math.round(420 + Math.random() * 340)}deg`,
+        color: accentThemes[idx % accentThemes.length].primary,
+        scale: `${(0.65 + Math.random() * 0.9).toFixed(2)}`
+      })),
+    [accentThemes]
+  );
+
   const currentAccent = accentThemes[currentTrack % accentThemes.length];
   const safeDuration = duration > 0 ? duration : parseDuration(songs[currentTrack].duration);
 
@@ -311,6 +326,23 @@ export default function BirthdayPage() {
 
         {showReveal && (
           <div className="absolute inset-0 flex items-center justify-center bg-black">
+            <div className="premium-confetti-layer" aria-hidden="true">
+              {revealConfetti.map((piece) => (
+                <span
+                  key={piece.id}
+                  className="premium-confetti-piece"
+                  style={{
+                    left: piece.left,
+                    backgroundColor: piece.color,
+                    animationDelay: piece.delay,
+                    animationDuration: piece.duration,
+                    "--drift": piece.drift,
+                    "--spin": piece.spin,
+                    "--scale": piece.scale
+                  } as React.CSSProperties}
+                />
+              ))}
+            </div>
             <div className="lux-reveal">
               <span className="lux-orb" />
               <span className="lux-ray" />
@@ -458,14 +490,28 @@ export default function BirthdayPage() {
       </div>
 
       {/* .lottie Display Section - after controls */}
-      <div className="relative z-10 bg-black/40 backdrop-blur-md border-t border-white/10">
+      <div
+        className="relative z-10 border-t border-white/10 overflow-hidden"
+        style={{
+          background: `linear-gradient(180deg, rgba(0,0,0,0.78) 0%, rgba(8,10,14,0.88) 38%, rgba(4,5,8,0.95) 100%), radial-gradient(circle at 50% 0%, ${currentAccent.soft} 0%, transparent 52%)`
+        }}
+      >
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 h-20"
+          style={{
+            background: `linear-gradient(180deg, ${currentAccent.sheen} 0%, transparent 100%)`
+          }}
+        />
         <div className="max-w-2xl mx-auto px-6 py-8">
-          <DotLottiePlayer
-            src="/Happy Birthday!.lottie"
-            autoplay
-            loop
-            className="w-full h-80"
-          />
+          <div className="premium-lottie-shell">
+            <DotLottiePlayer
+              src="/Happy Birthday!.lottie"
+              autoplay
+              loop
+              className="w-full h-80 premium-lottie-player"
+            />
+          </div>
+          <p className="text-center text-[11px] tracking-[0.25em] uppercase text-white/60 mt-3">Always, my love.</p>
         </div>
       </div>
 
