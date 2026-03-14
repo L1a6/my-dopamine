@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import { Play, Pause, SkipBack, SkipForward, Music, Cake, X, Plus } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, X, Plus } from 'lucide-react';
 
 const DotLottiePlayer = dynamic(
   () => import('@lottiefiles/dotlottie-react').then((mod) => mod.DotLottieReact),
@@ -34,7 +34,13 @@ export default function BirthdayPage() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const shouldAutoPlayRef = useRef(false);
 
-  const songs: Song[] = [
+  const parseDuration = (value: string) => {
+    const [min, sec] = value.split(":").map(Number);
+    if (!Number.isFinite(min) || !Number.isFinite(sec)) return 0;
+    return min * 60 + sec;
+  };
+
+  const songs: Song[] = useMemo(() => [
     {
       title: "You",
       artist: "Fola",
@@ -70,9 +76,9 @@ export default function BirthdayPage() {
       audioFile: "/Asylum - Olivetheboy.mp3",
       image: "/finepic5.jpg",
     }
-  ];
+  ], []);
 
-  const modalMessages: ModalMessage[] = [
+  const modalMessages: ModalMessage[] = useMemo(() => [
     {
       title: "Happy Birthday, Love",
       message: "You are my greatest blessing. Every moment with you is a song I never want to end. You make my heart sing in ways I never thought possible. Here's to celebrating you today and every day.",
@@ -98,7 +104,7 @@ export default function BirthdayPage() {
       message: "With you, I've found my sanctuary. My asylum from all the noise. You are my home, my peace, and my forever. Happy 19th birthday to my everything.",
       image: "/finepic5.jpg",
     }
-  ];
+  ], []);
 
   // Preloader timer
   useEffect(() => {
@@ -125,7 +131,7 @@ export default function BirthdayPage() {
     audio.currentTime = 0;
     setCurrentTime(0);
     setProgress(0);
-    setDuration(0);
+    setDuration(parseDuration(songs[currentTrack].duration));
     audio.load();
     
     if (shouldAutoPlayRef.current) {
@@ -137,35 +143,40 @@ export default function BirthdayPage() {
     return () => {
       audio.removeEventListener("canplay", handleCanPlay);
     };
-  }, [currentTrack]);
+  }, [currentTrack, songs]);
 
   // Audio event listeners
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
+    const syncFromAudio = () => {
+      const safeDuration = Number.isFinite(audio.duration) && audio.duration > 0
+        ? audio.duration
+        : parseDuration(songs[currentTrack].duration);
+
+      setDuration(safeDuration);
+      setCurrentTime(audio.currentTime || 0);
+      setProgress(safeDuration > 0 ? (audio.currentTime / safeDuration) * 100 : 0);
+    };
+
     const handleTimeUpdate = () => {
-      setCurrentTime(audio.currentTime);
-      if (audio.duration) {
-        setProgress((audio.currentTime / audio.duration) * 100);
-      }
+      syncFromAudio();
     };
 
     const handleLoadedMetadata = () => {
-      if (Number.isFinite(audio.duration) && audio.duration > 0) {
-        setDuration(audio.duration);
-      }
+      syncFromAudio();
     };
 
     const handleDurationChange = () => {
-      if (Number.isFinite(audio.duration) && audio.duration > 0) {
-        setDuration(audio.duration);
-      }
+      syncFromAudio();
     };
 
     const handleEnded = () => {
       if (shouldAutoPlayRef.current) {
         playNextTrack();
+      } else {
+        setIsPlaying(false);
       }
     };
 
@@ -175,6 +186,11 @@ export default function BirthdayPage() {
 
     const handlePause = () => {
       setIsPlaying(false);
+      syncFromAudio();
+    };
+
+    const handleSeeking = () => {
+      syncFromAudio();
     };
 
     audio.addEventListener("timeupdate", handleTimeUpdate);
@@ -183,6 +199,8 @@ export default function BirthdayPage() {
     audio.addEventListener("ended", handleEnded);
     audio.addEventListener("play", handlePlay);
     audio.addEventListener("pause", handlePause);
+    audio.addEventListener("seeking", handleSeeking);
+    audio.addEventListener("seeked", handleSeeking);
 
     return () => {
       audio.removeEventListener("timeupdate", handleTimeUpdate);
@@ -191,8 +209,10 @@ export default function BirthdayPage() {
       audio.removeEventListener("ended", handleEnded);
       audio.removeEventListener("play", handlePlay);
       audio.removeEventListener("pause", handlePause);
+      audio.removeEventListener("seeking", handleSeeking);
+      audio.removeEventListener("seeked", handleSeeking);
     };
-  }, []);
+  }, [currentTrack, songs]);
 
   const togglePlayPause = async () => {
     const audio = audioRef.current;
@@ -223,10 +243,16 @@ export default function BirthdayPage() {
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const audio = audioRef.current;
     if (!audio) return;
-    if (!Number.isFinite(audio.duration) || audio.duration <= 0) return;
+    const safeDuration = Number.isFinite(audio.duration) && audio.duration > 0
+      ? audio.duration
+      : parseDuration(songs[currentTrack].duration);
+    if (safeDuration <= 0) return;
     const bounds = e.currentTarget.getBoundingClientRect();
     const percent = (e.clientX - bounds.left) / bounds.width;
-    audio.currentTime = percent * audio.duration;
+    const nextTime = Math.min(Math.max(percent, 0), 1) * safeDuration;
+    audio.currentTime = nextTime;
+    setCurrentTime(nextTime);
+    setProgress((nextTime / safeDuration) * 100);
   };
 
   const formatTime = (time: number) => {
@@ -244,18 +270,9 @@ export default function BirthdayPage() {
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-600/20 rounded-full filter blur-3xl animate-pulse" style={{ animationDelay: "1s" }}></div>
 
         <div className="relative z-10 text-center space-y-8">
-          <div className="flex items-center justify-center gap-4">
-            <Music className="w-14 h-14 text-pink-400 animate-pulse" />
-            <Cake className="w-14 h-14 text-purple-400 animate-bounce" style={{ animationDelay: "0.2s" }} />
-          </div>
-
           <div className="space-y-3">
             <p className="text-white text-4xl font-light tracking-wide">cheers to the big 19</p>
             <p className="text-pink-300 text-xl font-light">baby!</p>
-          </div>
-
-          <div className="relative z-20 w-32 h-32 flex justify-center items-center">
-            <Cake size={64} className="text-pink-300 animate-pulse" />
           </div>
         </div>
       </div>
@@ -380,14 +397,12 @@ export default function BirthdayPage() {
       {/* .lottie Display Section - after controls */}
       <div className="bg-black/40 backdrop-blur-md border-t border-white/10">
         <div className="max-w-2xl mx-auto px-6 py-8">
-          <div className="mx-auto w-full max-w-xs h-56 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
-            <DotLottiePlayer
-              src="/Happy Birthday!.lottie"
-              autoplay
-              loop
-              className="w-full h-full"
-            />
-          </div>
+          <DotLottiePlayer
+            src="/Happy Birthday!.lottie"
+            autoplay
+            loop
+            className="w-full h-80"
+          />
         </div>
       </div>
 
