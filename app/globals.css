@@ -95,8 +95,8 @@ html {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
+  background: radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.08) 0%, rgba(0, 0, 0, 0.86) 56%);
+  backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -126,17 +126,26 @@ html {
 
 .modal-content {
   position: relative;
-  background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
+  background: linear-gradient(150deg, rgba(22, 24, 31, 0.94) 0%, rgba(11, 13, 18, 0.92) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 24px;
   padding: 32px;
   max-width: 600px;
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
-  backdrop-filter: blur(20px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  animation: slideUp 0.3s ease-out;
+  backdrop-filter: blur(24px);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  animation: slideUp 0.32s ease-out;
+}
+
+.premium-modal::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: 22px;
+  pointer-events: none;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.14) 0%, transparent 42%, rgba(255, 255, 255, 0.08) 100%);
 }
 
 .modal-image {
@@ -174,6 +183,23 @@ html {
 .close-modal:hover {
   background: rgba(255, 255, 255, 0.2);
   border-color: rgba(255, 255, 255, 0.3);
+}
+
+.premium-plus-button {
+  transform-origin: center;
+}
+
+.premium-plus-button::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border-radius: 999px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.04));
+  pointer-events: none;
+}
+
+.premium-plus-button:hover {
+  filter: saturate(1.22) brightness(1.06);
 }
 
 /* Gradient blur for modals */
@@ -234,33 +260,46 @@ html {
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.45);
 }
 
-/* Confetti transition */
-.confetti-layer {
+/* Premium loader reveal transition */
+.lux-reveal {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
 }
 
-.confetti-piece {
+.lux-orb {
   position: absolute;
-  top: -20px;
-  width: 8px;
-  height: 18px;
-  border-radius: 2px;
-  animation-name: confetti-spray;
-  animation-timing-function: ease-out;
-  animation-fill-mode: forwards;
+  width: 220px;
+  height: 220px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.35) 0%, rgba(255, 203, 154, 0.35) 30%, rgba(129, 163, 255, 0.22) 56%, transparent 76%);
+  animation: luxPulse 0.85s ease-out forwards;
 }
 
-@keyframes confetti-spray {
-  0% {
-    transform: translateY(0) rotate(0deg);
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(105vh) rotate(540deg);
-    opacity: 0;
-  }
+.lux-ray {
+  position: absolute;
+  width: 160vmax;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.72) 50%, transparent 100%);
+  animation: luxSweep 0.95s ease-out forwards;
+}
+
+.lux-ray:nth-child(2) { transform: rotate(20deg); }
+.lux-ray:nth-child(3) { transform: rotate(90deg); animation-delay: 0.05s; }
+.lux-ray:nth-child(4) { transform: rotate(145deg); animation-delay: 0.08s; }
+
+@keyframes luxPulse {
+  0% { transform: scale(0.45); opacity: 0.08; }
+  55% { transform: scale(1.15); opacity: 0.9; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+@keyframes luxSweep {
+  0% { opacity: 0; transform-origin: center; }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: scaleX(1.3); }
 }
 

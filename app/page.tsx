@@ -24,7 +24,7 @@ interface ModalMessage {
 }
 
 export default function BirthdayPage() {
-  const [preloaderStage, setPreloaderStage] = useState<"loading" | "exiting" | "confetti" | "done">("loading");
+  const [preloaderStage, setPreloaderStage] = useState<"loading" | "exiting" | "reveal" | "done">("loading");
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrack, setCurrentTrack] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -108,26 +108,13 @@ export default function BirthdayPage() {
 
   const accentThemes = useMemo(
     () => [
-      { primary: "#ff6b9a", glow: "rgba(255, 107, 154, 0.45)", soft: "rgba(255, 107, 154, 0.2)" },
-      { primary: "#4da3ff", glow: "rgba(77, 163, 255, 0.45)", soft: "rgba(77, 163, 255, 0.2)" },
-      { primary: "#e8b84f", glow: "rgba(232, 184, 79, 0.45)", soft: "rgba(232, 184, 79, 0.2)" },
-      { primary: "#7fe39d", glow: "rgba(127, 227, 157, 0.45)", soft: "rgba(127, 227, 157, 0.2)" },
-      { primary: "#a78bfa", glow: "rgba(167, 139, 250, 0.45)", soft: "rgba(167, 139, 250, 0.2)" }
+      { primary: "#ff8db1", glow: "rgba(255, 141, 177, 0.68)", soft: "rgba(255, 141, 177, 0.24)", sheen: "rgba(255, 220, 231, 0.36)" },
+      { primary: "#58b9ff", glow: "rgba(88, 185, 255, 0.7)", soft: "rgba(88, 185, 255, 0.24)", sheen: "rgba(213, 240, 255, 0.35)" },
+      { primary: "#f0c96c", glow: "rgba(240, 201, 108, 0.68)", soft: "rgba(240, 201, 108, 0.24)", sheen: "rgba(255, 240, 201, 0.36)" },
+      { primary: "#7be6bf", glow: "rgba(123, 230, 191, 0.68)", soft: "rgba(123, 230, 191, 0.24)", sheen: "rgba(216, 255, 243, 0.34)" },
+      { primary: "#b8a3ff", glow: "rgba(184, 163, 255, 0.7)", soft: "rgba(184, 163, 255, 0.24)", sheen: "rgba(235, 228, 255, 0.35)" }
     ],
     []
-  );
-
-  const confettiPieces = useMemo(
-    () =>
-      Array.from({ length: 34 }, (_, idx) => ({
-        id: idx,
-        left: `${Math.round(Math.random() * 100)}%`,
-        delay: `${(Math.random() * 0.45).toFixed(2)}s`,
-        duration: `${(0.9 + Math.random() * 0.7).toFixed(2)}s`,
-        color: accentThemes[idx % accentThemes.length].primary,
-        rotate: `${Math.round(Math.random() * 360)}deg`
-      })),
-    [accentThemes]
   );
 
   const currentAccent = accentThemes[currentTrack % accentThemes.length];
@@ -136,11 +123,11 @@ export default function BirthdayPage() {
   // Preloader stage sequence
   useEffect(() => {
     const toExit = setTimeout(() => setPreloaderStage("exiting"), 2400);
-    const toConfetti = setTimeout(() => setPreloaderStage("confetti"), 3050);
+    const toReveal = setTimeout(() => setPreloaderStage("reveal"), 3050);
     const toDone = setTimeout(() => setPreloaderStage("done"), 3900);
     return () => {
       clearTimeout(toExit);
-      clearTimeout(toConfetti);
+      clearTimeout(toReveal);
       clearTimeout(toDone);
     };
   }, []);
@@ -296,11 +283,11 @@ export default function BirthdayPage() {
 
   if (preloaderStage !== "done") {
     const isExiting = preloaderStage === "exiting";
-    const showConfetti = preloaderStage === "confetti";
+    const showReveal = preloaderStage === "reveal";
 
     return (
       <div className="fixed inset-0 z-50 overflow-hidden bg-black">
-        {!showConfetti && (
+        {!showReveal && (
           <div
             className={`absolute inset-0 bg-gradient-to-br from-black via-slate-950 to-gray-950 flex items-center justify-center transition-all duration-700 ${isExiting ? "opacity-0 scale-95 -translate-y-4" : "opacity-100 scale-100 translate-y-0"}`}
           >
@@ -322,24 +309,15 @@ export default function BirthdayPage() {
 
         )}
 
-        {showConfetti && (
+        {showReveal && (
           <div className="absolute inset-0 flex items-center justify-center bg-black">
-            <div className="absolute inset-0 confetti-layer">
-              {confettiPieces.map((piece) => (
-                <span
-                  key={piece.id}
-                  className="confetti-piece"
-                  style={{
-                    left: piece.left,
-                    backgroundColor: piece.color,
-                    animationDelay: piece.delay,
-                    animationDuration: piece.duration,
-                    transform: `rotate(${piece.rotate})`
-                  }}
-                />
-              ))}
+            <div className="lux-reveal">
+              <span className="lux-orb" />
+              <span className="lux-ray" />
+              <span className="lux-ray" />
+              <span className="lux-ray" />
             </div>
-            <p className="relative z-10 text-3xl tracking-wide text-white/90">Happy Birthday</p>
+            <p className="relative z-10 text-3xl tracking-[0.18em] text-white/90">Happy Birthday</p>
           </div>
         )}
       </div>
@@ -351,7 +329,7 @@ export default function BirthdayPage() {
       <div
         className="pointer-events-none absolute inset-0"
         style={{
-          background: `radial-gradient(circle at 15% 15%, ${currentAccent.soft} 0%, transparent 45%), radial-gradient(circle at 85% 80%, ${currentAccent.glow} 0%, transparent 42%)`
+          background: `radial-gradient(circle at 15% 15%, ${currentAccent.soft} 0%, transparent 45%), radial-gradient(circle at 85% 80%, ${currentAccent.glow} 0%, transparent 42%), linear-gradient(135deg, transparent 20%, ${currentAccent.sheen} 50%, transparent 80%)`
         }}
       />
 
@@ -376,10 +354,11 @@ export default function BirthdayPage() {
           {/* Plus Button for Modal */}
           <button
             onClick={() => setShowModal(true)}
-            className="absolute top-4 right-4 z-10 p-3 rounded-full text-white backdrop-blur-md transition-all hover:scale-110"
+            className="premium-plus-button absolute top-4 right-4 z-10 p-3 rounded-full text-white backdrop-blur-md transition-all hover:scale-110"
             style={{
               backgroundColor: `${currentAccent.primary}66`,
-              border: `1px solid ${currentAccent.primary}`
+              border: `1px solid ${currentAccent.sheen}`,
+              boxShadow: `0 8px 28px ${currentAccent.glow}, inset 0 1px 0 rgba(255,255,255,0.42)`
             }}
             type="button"
             aria-label="Show message"
@@ -502,7 +481,7 @@ export default function BirthdayPage() {
           aria-labelledby="modal-title"
         >
           <div 
-            className="modal-content" 
+            className="modal-content premium-modal" 
             onClick={(e) => e.stopPropagation()}
           >
             <button
