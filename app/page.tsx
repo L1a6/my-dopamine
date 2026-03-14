@@ -499,14 +499,12 @@ export default function BirthdayPage() {
         <div className="premium-lottie-sheen" />
 
         <div className="max-w-2xl mx-auto px-6 py-8">
-          <div className="premium-lottie-shell">
-            <DotLottiePlayer
-              src="/Happy Birthday!.lottie"
-              autoplay
-              loop
-              className="w-full h-80 premium-lottie-player"
-            />
-          </div>
+          <DotLottiePlayer
+            src="/Happy Birthday!.lottie"
+            autoplay
+            loop
+            className="w-full h-96 premium-lottie-player"
+          />
         </div>
       </div>
 
