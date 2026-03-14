@@ -343,13 +343,7 @@ export default function BirthdayPage() {
                 />
               ))}
             </div>
-            <div className="lux-reveal">
-              <span className="lux-orb" />
-              <span className="lux-ray" />
-              <span className="lux-ray" />
-              <span className="lux-ray" />
-            </div>
-            <p className="relative z-10 text-3xl tracking-[0.18em] text-white/90">Happy Birthday</p>
+            <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-transparent" />
           </div>
         )}
       </div>
@@ -491,17 +485,19 @@ export default function BirthdayPage() {
 
       {/* .lottie Display Section - after controls */}
       <div
-        className="relative z-10 border-t border-white/10 overflow-hidden"
+        className="relative z-10 border-t border-white/10 overflow-hidden premium-lottie-section"
         style={{
-          background: `linear-gradient(180deg, rgba(0,0,0,0.78) 0%, rgba(8,10,14,0.88) 38%, rgba(4,5,8,0.95) 100%), radial-gradient(circle at 50% 0%, ${currentAccent.soft} 0%, transparent 52%)`
-        }}
+          ["--accent-primary" as "--accent-primary"]: currentAccent.primary,
+          ["--accent-soft" as "--accent-soft"]: currentAccent.soft,
+          ["--accent-glow" as "--accent-glow"]: currentAccent.glow,
+          ["--accent-sheen" as "--accent-sheen"]: currentAccent.sheen
+        } as React.CSSProperties}
       >
-        <div
-          className="pointer-events-none absolute inset-x-0 top-0 h-20"
-          style={{
-            background: `linear-gradient(180deg, ${currentAccent.sheen} 0%, transparent 100%)`
-          }}
-        />
+        <div className="premium-lottie-grid" />
+        <div className="premium-lottie-glow-left" />
+        <div className="premium-lottie-glow-right" />
+        <div className="premium-lottie-sheen" />
+
         <div className="max-w-2xl mx-auto px-6 py-8">
           <div className="premium-lottie-shell">
             <DotLottiePlayer
@@ -511,7 +507,6 @@ export default function BirthdayPage() {
               className="w-full h-80 premium-lottie-player"
             />
           </div>
-          <p className="text-center text-[11px] tracking-[0.25em] uppercase text-white/60 mt-3">Always, my love.</p>
         </div>
       </div>
 

@@ -260,54 +260,11 @@ html {
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.45);
 }
 
-/* Premium loader reveal transition */
-.lux-reveal {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.lux-orb {
-  position: absolute;
-  width: 220px;
-  height: 220px;
-  border-radius: 999px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.35) 0%, rgba(255, 203, 154, 0.35) 30%, rgba(129, 163, 255, 0.22) 56%, transparent 76%);
-  animation: luxPulse 0.85s ease-out forwards;
-}
-
-.lux-ray {
-  position: absolute;
-  width: 160vmax;
-  height: 2px;
-  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.72) 50%, transparent 100%);
-  animation: luxSweep 0.95s ease-out forwards;
-}
-
-.lux-ray:nth-child(2) { transform: rotate(20deg); }
-.lux-ray:nth-child(3) { transform: rotate(90deg); animation-delay: 0.05s; }
-.lux-ray:nth-child(4) { transform: rotate(145deg); animation-delay: 0.08s; }
-
-@keyframes luxPulse {
-  0% { transform: scale(0.45); opacity: 0.08; }
-  55% { transform: scale(1.15); opacity: 0.9; }
-  100% { transform: scale(1.5); opacity: 0; }
-}
-
-@keyframes luxSweep {
-  0% { opacity: 0; transform-origin: center; }
-  20% { opacity: 1; }
-  100% { opacity: 0; transform: scaleX(1.3); }
-}
-
 /* Premium confetti for reveal */
 .premium-confetti-layer {
   position: absolute;
   inset: 0;
-  overflow: hidden;
+  overflow: visible;
   pointer-events: none;
 }
 
@@ -316,7 +273,7 @@ html {
   --spin: 540deg;
   --scale: 1;
   position: absolute;
-  top: -18px;
+  top: -24px;
   width: 7px;
   height: 14px;
   border-radius: 2px;
@@ -335,7 +292,7 @@ html {
 
 @keyframes premiumConfettiFall {
   0% {
-    transform: translate3d(0, -16px, 0) rotate(0deg) scale(var(--scale));
+    transform: translate3d(0, -28px, 0) rotate(0deg) scale(var(--scale));
     opacity: 0;
   }
   16% {
@@ -348,12 +305,74 @@ html {
 }
 
 /* Premium lottie treatment */
+.premium-lottie-section {
+  background:
+    linear-gradient(180deg, rgba(6, 8, 12, 0.82) 0%, rgba(7, 10, 15, 0.92) 42%, rgba(3, 5, 9, 0.97) 100%),
+    radial-gradient(circle at 50% -10%, var(--accent-soft) 0%, transparent 58%);
+}
+
+.premium-lottie-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.18;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.65) 0%, transparent 85%);
+}
+
+.premium-lottie-glow-left,
+.premium-lottie-glow-right,
+.premium-lottie-sheen {
+  position: absolute;
+  pointer-events: none;
+}
+
+.premium-lottie-glow-left {
+  left: -12%;
+  top: 8%;
+  width: 42%;
+  height: 78%;
+  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+  filter: blur(26px);
+  opacity: 0.6;
+}
+
+.premium-lottie-glow-right {
+  right: -10%;
+  bottom: 4%;
+  width: 38%;
+  height: 72%;
+  background: radial-gradient(circle, var(--accent-soft) 0%, transparent 74%);
+  filter: blur(22px);
+  opacity: 0.52;
+}
+
+.premium-lottie-sheen {
+  inset: 0;
+  background: linear-gradient(115deg, transparent 22%, var(--accent-sheen) 50%, transparent 78%);
+  opacity: 0.22;
+  transform: translateX(-8%);
+}
+
 .premium-lottie-shell {
+  position: relative;
   border-radius: 22px;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  background: linear-gradient(150deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.14);
   overflow: hidden;
+}
+
+.premium-lottie-shell::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: 20px;
+  pointer-events: none;
+  background: linear-gradient(130deg, rgba(255, 255, 255, 0.18) 0%, transparent 42%, rgba(255, 255, 255, 0.06) 100%);
 }
 
 .premium-lottie-player {
